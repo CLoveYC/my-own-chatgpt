@@ -3,85 +3,121 @@ import os
 import json
 from datetime import datetime
 
+# 設定存檔目錄
 SESSIONS_DIR = "sessions"
-if not os.path.exists(SESSIONS_DIR):
+if not os.path.exists(SESSIONS_DIR): 
     os.makedirs(SESSIONS_DIR)
 
 def load_session_data(session_id):
+    """從 JSON 載入會話紀錄"""
     path = os.path.join(SESSIONS_DIR, f"{session_id}.json")
     if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            if isinstance(data, list):
-                return {"title": "舊對話", "system_instruction": "你是一個專業助手。", "messages": data}
-            return data
-    return {"title": "新對話", "system_instruction": "你是一個專業助手。", "messages": []}
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return None
+    return None
 
 def save_session_data(session_id, title, system_instruction, messages):
-    if session_id:
+    """儲存目前會話到 JSON"""
+    if session_id and messages:
         path = os.path.join(SESSIONS_DIR, f"{session_id}.json")
-        data = {"title": title, "system_instruction": system_instruction, "messages": messages}
+        data = {
+            "title": title, 
+            "system_instruction": system_instruction, 
+            "messages": messages,
+            "last_updated": datetime.now().isoformat()
+        }
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-def display_chat_messages(messages):
-    for msg in messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+def delete_session(session_id):
+    """刪除特定的會話檔案"""
+    path = os.path.join(SESSIONS_DIR, f"{session_id}.json")
+    if os.path.exists(path):
+        os.remove(path)
+        return True
+    return False
 
 def render_sidebar():
+    """渲染側邊欄並返回上傳的音頻文件"""
     with st.sidebar:
-        st.title("💬 對話管理")
-        if st.button("➕ 啟動新對話", use_container_width=True):
-            st.session_state.current_session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+        st.title("🧠 Agent 控制中心")
+        
+        # 1. 新對話按鈕
+        if st.button("➕ 開啟新對話", use_container_width=True, type="primary"):
             st.session_state.messages = []
+            st.session_state.current_session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
             st.session_state.current_title = "新對話"
-            st.session_state.system_instruction = "你是一個專業助手。" # 重置預設指令
             st.rerun()
 
         st.divider()
-        files = sorted([f for f in os.listdir(SESSIONS_DIR) if f.endswith(".json")], reverse=True)
-        for f in files:
-            session_id = f.replace(".json", "")
-            data = load_session_data(session_id)
-            display_title = data.get("title", "新對話")
-            is_current = (st.session_state.get("current_session_id") == session_id)
+
+        # 2. 核心功能切換 (使用 Expander 節省空間)
+        with st.expander("🛠️ 核心功能設定", expanded=True):
+            st.session_state.use_memory = st.toggle("開啟長期記憶 (RAG)", value=st.session_state.get("use_memory", True))
+            st.session_state.auto_route = st.toggle("智慧路由模型 (LLama 3.3)", value=st.session_state.get("auto_route", True))
             
-            col1, col2 = st.columns([0.8, 0.2])
-            with col1:
-                icon = "⭐" if is_current else "📄"
-                if st.button(f"{icon} {display_title}", key=f"s_{session_id}", use_container_width=True):
-                    st.session_state.current_session_id = session_id
-                    st.session_state.messages = data.get("messages", [])
-                    st.session_state.current_title = data.get("title", "新對話")
-                    st.session_state.system_instruction = data.get("system_instruction", "你是一個專業助手。")
-                    st.rerun()
-            with col2:
-                if st.button("🗑️", key=f"d_{session_id}"):
-                    os.remove(os.path.join(SESSIONS_DIR, f))
-                    if st.session_state.current_session_id == session_id:
-                        st.session_state.current_session_id = None
-                    st.rerun()
+            # 允許動態修改 System Prompt
+            new_instruction = st.text_area(
+                "系統指令 (System Prompt)", 
+                value=st.session_state.get("system_instruction", "你是一個強大的 AI 助手。"),
+                height=100
+            )
+            st.session_state.system_instruction = new_instruction
 
         st.divider()
-        st.title("⚙️ 模型設定")
-        
-        # 🔥 【新增】System Instruction 輸入框
-        system_instruction = st.text_area(
-            "系統指令 (System Instruction)", 
-            value=st.session_state.get("system_instruction", "你是一個專業助手。"),
-            help="在這裡定義 AI 的人設或說話風格",
-            height=100
-        )
-        # 即時更新 session_state 確保存檔時抓到最新指令
-        st.session_state.system_instruction = system_instruction
 
-        model = st.selectbox("選擇模型", ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "qwen/qwen3-32b", "openai/gpt-oss-120b"])
+        # 3. 語音輸入區
+        st.subheader("🎙️ 語音轉錄")
+        audio_file = st.file_uploader("上傳音訊 (Groq Cloud 加速)", type=["mp3", "wav", "m4a", "flac", "ogg"])
         
-        with st.expander("🛠️ 進階參數"):
-            temp = st.slider("溫度 (Temp)", 0.0, 2.0, 0.7, 0.1)
-            top_p = st.slider("核取樣 (Top-P)", 0.0, 1.0, 1.0, 0.1)
-            max_t = st.number_input("最大長度", 128, 8192, 2048)
-            p_pen = st.slider("存在懲罰", -2.0, 2.0, 0.0, 0.1)
+        st.divider()
+
+        # 4. 歷史紀錄管理
+        st.subheader("📜 歷史紀錄")
+        
+        # 獲取所有檔案並按時間排序
+        files = sorted(
+            [f for f in os.listdir(SESSIONS_DIR) if f.endswith(".json")], 
+            key=lambda x: os.path.getmtime(os.path.join(SESSIONS_DIR, x)), 
+            reverse=True
+        )
+
+        for f in files:
+            sid = f.replace(".json", "")
+            # 這裡不讀取完整內容，只讀取標題以優化效能
+            data = load_session_data(sid)
+            if not data: continue
             
-        return model, system_instruction, temp, top_p, max_t, p_pen
+            title = data.get("title", "無標題")
+            
+            # 使用 Columns 製作「選擇」與「刪除」按鈕排版
+            col1, col2 = st.columns([0.8, 0.2])
+            with col1:
+                # 標示當前正在使用的會話
+                btn_type = "secondary"
+                if st.session_state.get("current_session_id") == sid:
+                    title = f"▶ {title}"
+                
+                if st.button(f"{title[:12]}", key=f"load_{sid}", use_container_width=True):
+                    st.session_state.current_session_id = sid
+                    st.session_state.messages = data['messages']
+                    st.session_state.current_title = data['title']
+                    st.session_state.system_instruction = data.get('system_instruction', st.session_state.system_instruction)
+                    st.rerun()
+            
+            with col2:
+                if st.button("🗑️", key=f"del_{sid}", help="刪除此對話"):
+                    if delete_session(sid):
+                        if st.session_state.get("current_session_id") == sid:
+                            st.session_state.messages = []
+                            st.session_state.current_session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        st.rerun()
+
+        # 頁腳版本資訊
+        st.divider()
+        st.caption("Ultimate Agent v2.0 (2026) | Powered by Groq & Llama 3")
+
+        return audio_file

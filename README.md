@@ -1,82 +1,98 @@
-# My Own ChatGPT - Advanced AI Assistant
-
-這是一個基於 **Streamlit** 開發的高性能 ChatGPT 網頁應用程式，專為網工所 HW1 作業設計。本專案透過串接 **Groq API** 提供極速的 LLM 推論體驗，並具備多對話管理、智慧標題生成、以及全方位的模型參數控制功能。
-
-## 🚀 核心亮點 (Core Features)
-
-- **智慧標題 (Smart AI Title)**：系統會自動調用 Llama 3.1 8B 模型，根據使用者的首條訊息語義總結出精簡標題，而非生硬截斷。
-- **多對話管理 (Multi-Session CRUD)**：支援建立多組獨立對話，資料以 JSON 格式持久化存儲於本地，支援歷史紀錄切換與刪除。
-- **進階參數控制 (Advanced Playground)**：
-  - **Temperature**: 控制隨機性。
-  - **Top-P**: 控制詞彙多樣性。
-  - **Max Tokens**: 限制回答長度。
-  - **Presence Penalty**: 鼓勵或減少話題重複。
-- **系統指令 (System Instruction)**：支援動態設定 AI 的人設（Persona），並能隨對話紀錄獨立儲存。
-- **現代化工具鏈 (Modern Tech Stack)**：使用 `uv` 進行套件管理，確保環境乾淨且安裝極速。
-- **串流輸出 (Streaming Response)**：完美模擬 ChatGPT 的逐字輸出效果。
+這是一份為你的專案量身打造、具備 **2026 生產級標準** 的 `README.md`。它包含了安裝步驟、技術架構以及你最引以為傲的四大功能介紹。
 
 ---
 
-## 🛠️ 技術棧 (Tech Stack)
+# 🤖 Ultimate AI Agent (2026 Edition)
 
-- **Frontend**: Streamlit
-- **Backend**: Python 3.11+
-- **LLM API**: Groq (Llama-3.3-70B, Mixtral, Gemma 2)
-- **Package Manager**: [uv](https://github.com/astral-sh/uv)
-- **Data Storage**: Local JSON Files
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit](https://img.shields.io/badge/frontend-Streamlit-FF4B4B.svg)](https://streamlit.io/)
+[![Groq](https://img.shields.io/badge/LLM-Groq%20LPU-orange.svg)](https://groq.com/)
+[![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-lightgrey.svg)](https://www.trychroma.com/)
+
+這是一個基於 **Groq LPU** 加速技術開發的高效能 AI 代理人系統。整合了長期記憶 (RAG)、語音多模態 (STT)、智慧模型路由以及聯網工具 (MCP)，旨在提供亞秒級的智慧交互體驗。
+
+## 🚀 核心功能 (Key Features)
+
+### 1. 🧠 長期記憶 (Long-term Memory)
+透過 **ChromaDB** 向量資料庫實現。系統會自動對每輪對話進行語意索引，並在後續對話中主動檢索相關背景，解決 LLM 遺忘歷史資訊的問題。
+
+### 2. 🎙️ 語音多模態 (Multimodal STT)
+整合 **Whisper-large-v3-turbo** 雲端引擎。支援多種音訊格式上傳，達成極速語音轉文字，實現流暢的語音交互。
+
+### 3. 🛣️ 智慧路由 (Auto-Routing)
+系統會根據任務複雜度自動切換模型：
+- **Llama-3.1-8b-instant**: 用於日常問候與簡單任務（追求極速）。
+- **Llama-3.3-70b-versatile**: 用於深度分析、程式開發與聯網搜尋（追求邏輯）。
+
+### 4. 🌐 聯網搜尋與 MCP 工具 (Tool Use)
+整合 **DuckDuckGo Search** 與網頁抓取工具。AI 能主動判斷是否需要搜尋即時事實（如幣價、新聞），並透過工具獲取最新資訊。
 
 ---
 
-## 📦 安裝與環境設定 (Installation)
+## 🛠️ 技術架構 (Tech Stack)
 
-### 1. 安裝 uv
-如果你尚未安裝 `uv`，請執行：
+- **LLM Engine**: Groq (Llama 3.3-70B / 3.1-8B)
+- **Vector DB**: ChromaDB (with `pysqlite3-binary` fix)
+- **Speech-to-Text**: Groq Cloud Whisper API
+- **Web Search**: DuckDuckGo Search (DDGS)
+- **Backend/UI**: Streamlit
+
+---
+
+## 📦 安裝指南 (Installation)
+
+### 1. 複製專案
 ```bash
-# Windows (PowerShell)
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# macOS / Linux
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-### 2. 複製專案與安裝依賴
-```bash
-git clone https://github.com/CLoveYC/my-own-chatgpt
+git clone https://github.com/your-username/my-own-chatgpt.git
 cd my-own-chatgpt
-
-# 使用 uv 自動同步並建立虛擬環境
-uv sync
 ```
 
-### 3. 設定 API Key
-在專案根目錄建立 `.env` 檔案，並填入你的 Groq API Key：
+### 2. 建立虛擬環境 (Recommended)
+```bash
+python -m venv .venv
+source .venv/bin/activate  # WSL/Linux
+```
+
+### 3. 安裝依賴
+```bash
+pip install streamlit openai chromadb duckduckgo-search beautifulsoup4 python-dotenv pysqlite3-binary requests
+```
+
+### 4. 環境變數設定
+在專案根目錄建立 `.env` 檔案：
 ```env
-GROQ_API_KEY=gsk_your_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
 ```
-*(註：本專案已將 `.env` 加入 `.gitignore` 以保護私鑰安全)*
 
 ---
 
-## 🏃 啟動程式
+## 🖥️ 使用說明 (Usage)
 
-使用 `uv` 一鍵啟動 Web 服務：
+啟動應用程式：
 ```bash
-uv run streamlit run app.py
+streamlit run app.py
 ```
-啟動後，瀏覽器會自動開啟 `http://localhost:8501`。
+
+### 💡 Demo 建議指令
+- **搜尋功能**: 「搜尋目前的比特幣價格並總結一則最新新聞。」
+- **記憶功能**: 「我剛才說過我住在哪裡？」
+- **語音功能**: 直接上傳一個音訊檔，詢問其中的內容。
 
 ---
 
 ## 📂 專案結構 (Project Structure)
 
-```text
-├── app.py              # 程式主入口，負責頁面流程與狀態控制
-├── llm_service.py      # LLM 邏輯層，封裝 API 呼叫與標題生成
-├── ui_components.py    # UI 組件層，負責側邊欄渲染與檔案讀寫
-├── sessions/           # 儲存對話紀錄的 JSON 資料夾 (自動建立)
-├── .env                # 環境變數 (私密金鑰)
-├── .gitignore          # 排除 sessions/ 與 .env 上傳
-└── pyproject.toml      # uv 專案定義文件
-```
+- `app.py`: 主程式與 Streamlit UI 邏輯。
+- `llm_service.py`: 處理 LLM 請求、智慧路由與工具呼叫核心。
+- `memory_service.py`: 負責向量數據儲存與 RAG 檢索。
+- `tools.py`: 定義 Web 搜尋與網頁抓取等外部工具。
+- `ui_components.py`: 側邊欄渲染與對話 Session 管理。
 
-`[Demo Video Link](https://youtu.be/JxjCjyTRfsk)`
+---
+
+## 📜 授權協議 (License)
+本專案採用 [MIT License](LICENSE) 授權。
+
+---
+**開發者**: [Your Name]
+**更新日期**: 2026-04-29
