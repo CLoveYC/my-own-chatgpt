@@ -1,13 +1,4 @@
-這是一份為你的專案量身打造、具備 **2026 生產級標準** 的 `README.md`。它包含了安裝步驟、技術架構以及你最引以為傲的四大功能介紹。
-
----
-
 # 🤖 Ultimate AI Agent (2026 Edition)
-
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Streamlit](https://img.shields.io/badge/frontend-Streamlit-FF4B4B.svg)](https://streamlit.io/)
-[![Groq](https://img.shields.io/badge/LLM-Groq%20LPU-orange.svg)](https://groq.com/)
-[![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-lightgrey.svg)](https://www.trychroma.com/)
 
 這是一個基於 **Groq LPU** 加速技術開發的高效能 AI 代理人系統。整合了長期記憶 (RAG)、語音多模態 (STT)、智慧模型路由以及聯網工具 (MCP)，旨在提供亞秒級的智慧交互體驗。
 
@@ -94,5 +85,5 @@ streamlit run app.py
 本專案採用 [MIT License](LICENSE) 授權。
 
 ---
-**開發者**: [Your Name]
+**開發者**: CLoveYC
 **更新日期**: 2026-04-29
